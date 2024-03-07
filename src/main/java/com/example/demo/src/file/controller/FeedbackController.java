@@ -1,20 +1,22 @@
 package com.example.demo.src.file.controller;
 
+
+import com.example.demo.common.code.CommonCode;
+import com.example.demo.common.response.CommentResponse;
+import com.example.demo.common.response.Response;
 import com.example.demo.src.file.Repository.FeedbackRepository;
 import com.example.demo.src.file.Repository.FeedbackStatusRepository;
 import com.example.demo.src.file.Service.BoardService;
 import com.example.demo.src.file.Service.FeedbackService;
 import com.example.demo.src.file.client.TeamServiceClient;
-import com.example.demo.src.file.common.CommentResponse;
-import com.example.demo.src.file.common.CommonCode;
-import com.example.demo.src.file.common.Response;
+
 import com.example.demo.src.file.dto.request.FeedbackRequest;
 import com.example.demo.src.file.dto.response.BoardFeedbackResponse;
 import com.example.demo.src.file.dto.response.FeedbackResponse;
 import com.example.demo.src.file.dto.response.FeedbackStatusFeedbackYnUserIdResponse;
-import com.example.demo.src.file.dto.response.FeedbackStatusTeamMember;
 
-import com.example.demo.src.file.vo.ResponseTeamMember;
+
+import com.example.demo.src.file.vo.MemberVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,11 +36,13 @@ public class FeedbackController {
 
     private final FeedbackRepository feedbackRepository;
     private final BoardService boardService;
+
     @Autowired
     TeamServiceClient teamServiceClient;
+
+
     //피드백 글쓰기
     //isApproved=0인경우 피드백 거부, isApproved=1인경우 피드백 승인
-
     @PostMapping("/comment/{boardId}/{writerId}/{isApproved}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Response<FeedbackResponse>>  commentSave(@PathVariable("boardId") Long boardId,
@@ -67,7 +71,7 @@ public class FeedbackController {
     //    Members members=feedbackService.getUsers(memberId);
         List<FeedbackStatusFeedbackYnUserIdResponse> feedbackStatusesList = feedbackStatusRepository.findFeedbackYnAndUserIdByBoardsId(boardId);
         System.out.println(feedbackStatusesList.get(0).getFeedbackYn());
-        List<ResponseTeamMember> memberResponses=boardService.teamMemberList(teamId);
+        List<MemberVo> memberResponses=boardService.teamMemberList(teamId);
         System.out.println(memberResponses.get(0).getName());
         List<BoardFeedbackResponse> feedbacksList = feedbackRepository.findFeedbackByBoardsId(boardId);
         System.out.println("hello");

@@ -2,7 +2,7 @@ package com.example.demo.src.file.dto.response;
 
 
 
-import com.example.demo.src.file.vo.ResponseTeamMember;
+import com.example.demo.src.file.vo.MemberVo;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class BoardMemberResponse {
         this.studentNumber=studentNumber;
     }
 
-    public static BoardMemberResponse  from(ResponseTeamMember memberResponse) {
+    public static BoardMemberResponse  from(MemberVo memberResponse) {
         return BoardMemberResponse .builder()
                 .userId(memberResponse.getId())
                 .writerName(memberResponse.getName())

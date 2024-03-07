@@ -1,6 +1,7 @@
 package com.example.demo.src.file.domain;
 
 import com.example.demo.src.file.BaseTimeEntity;
+import com.example.demo.src.file.dto.request.BoardWriteRequest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -89,10 +90,15 @@ public class Boards extends BaseTimeEntity {
 
 
     @Builder
-    public Boards(String title, String content){
+    public Boards(String title, String content, Long memberId, Long teamId, Long workId ){
         this.title = title;
         this.content = content;
         this.viewCnt = 0L;
         this.feedbackYn=false;
+        this.userId=memberId;
+        this.teamId=teamId;
+        this.workId=workId;
     }
+
+
 }

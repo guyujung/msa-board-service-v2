@@ -4,7 +4,7 @@ package com.example.demo.src.file.dto.response;
 import com.example.demo.src.file.domain.Boards;
 import com.example.demo.src.file.domain.Feedbacks;
 
-import com.example.demo.src.file.vo.ResponseTeamMember;
+import com.example.demo.src.file.vo.MemberVo;
 import lombok.Builder;
 import lombok.Data;
 
@@ -48,7 +48,7 @@ public class FeedbackResponse {
         this.modReq=modReq;
     }
 
-    public static FeedbackResponse from(Feedbacks feedbacks, Boards boards, ResponseTeamMember memberResponse) {
+    public static FeedbackResponse from(Feedbacks feedbacks, Boards boards, MemberVo memberResponse) {
         return FeedbackResponse.builder()
                 .feedbackId(feedbacks.getId())
                 .boardId(boards.getId())

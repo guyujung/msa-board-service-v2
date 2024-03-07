@@ -3,7 +3,7 @@ package com.example.demo.src.file.vo;
 import lombok.Data;
 
 @Data
-public class FeedbackStatusResponse {
+public class FeedbackStatusVo {
 
     private Long Id;
     private Long userId;

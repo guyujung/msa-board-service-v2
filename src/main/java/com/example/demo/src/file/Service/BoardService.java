@@ -1,6 +1,7 @@
 package com.example.demo.src.file.Service;
 
 
+import com.example.demo.common.exception.BoardAlreadyWriteException;
 import com.example.demo.src.file.Repository.AlarmRepository;
 import com.example.demo.src.file.Repository.BoardRepository;
 import com.example.demo.src.file.Repository.FeedbackStatusRepository;
@@ -22,14 +23,17 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import static com.example.demo.src.file.dto.request.BoardWriteRequest.toEntity;
 
 @AllArgsConstructor
 @Service
@@ -42,13 +46,11 @@ public class BoardService {
     private FileRepository fileRepository;
     private FileService fileService;
     private AlarmRepository alarmRepository;
+
     @Autowired
     WorkerServiceClient workerServiceClient;
-
-
     @Autowired
     TeamServiceClient teamServiceClient;
-
     @Autowired
     MemberServiceClient memberServiceClient;
 
@@ -57,70 +59,32 @@ public class BoardService {
         boardRepository.increaseViewCount(boardId);
     }
 
-    public static Boards toEntity(BoardWriteRequest boardWriteRequest) {
-        return Boards.builder()
-                .title(boardWriteRequest.getTitle())
-                .content(boardWriteRequest.getContent())
-                .build();
-    }
+
 
     //글 작성
-    @Transactional(rollbackFor = Exception.class) // Exception이 발생하면 롤백
+    @Transactional
     public multiWriteResponse multiWrite(BoardWriteRequest request, Long memberId, Long teamId, Long workId, MultipartFile[] files) throws Exception {
-        //memberId와 workId로 worker조회하기. 글을 쓰는 사람이 work를 담당한 worker인지 확인하기 위함
 
-        //feign client 사용
-        WorkerResponse workerResponse=workerServiceClient.getWriteStatus(memberId,workId);
-        String projectPath = "/src/main/resources/static/files";
+        //memberId와 workId로 worker조회하기. 글을 쓰는 사람이 work를 담당한 worker인지 확인하기 위함(feign client 사용)
+        WorkerVo workerVo =workerServiceClient.getWriteStatus(memberId,workId);
 
-        //work의 담당자만 게시판을 작성할 수 있음
-        //각각의 담당자마다 게시판을 한번만 작성할 수 있음
-        if (workerResponse.isWriteYn()) {
-            throw new IllegalStateException("Worker has already written a board.");
+        //work의 담당자만 게시판을 작성할 수 있고, 각각의 담당자마다 게시판을 한번만 작성할 수 있음
+        if (workerVo.isWriteYn()) {
+            throw new BoardAlreadyWriteException("Worker has already written a board.");
         }
-
-        //woker가 게시판을 작성했음을 등록
-        //feign client 사용
+        //woker가 게시판을 작성했음을 등록(feign client 사용)
         workerServiceClient.setWriteStatusTrue(memberId,workId);
-        // 게시판 등록
-        //피드백을 등록 하기만 하면
-        //work 상태를 피드백진행중=3으로 바꿈
-        //한번 피드백을 했으면 다시 못바꿈)
-        //workResponse.setStatus(3);
+        //게시판 등록, 피드백을 등록 하기만 하면 work 상태를 피드백진행중=3으로 바꿈, 한번 피드백을 했으면 다시 못바꿈)
         workerServiceClient.setWorkStatus(workId, 3);
 
-        Boards boards = toEntity(request);
-        boards.setUserId(memberId);
-        boards.setTeamId(teamId);
-        boards.setWorkId(workId);
-
+        Boards boards = toEntity(request,memberId,teamId,workId);
         boardRepository.save(boards);
-
-        // Save all uploaded files
-        if (files != null) {
-            for (MultipartFile file : files) {
-                UUID uuid = UUID.randomUUID();
-                String fileName = uuid + "_" + file.getOriginalFilename();
-                File saveFile = new File(projectPath, fileName);
-                file.transferTo(saveFile);
-
-
-                // 빌더를 사용하여 파일 객체 생성
-                Files file1 = Files.builder()
-                        .filename(fileName)
-                        .filepath("/files/" + fileName)
-                        .build();
-                file1.confirmBoard(boards);
-                fileRepository.save(file1);
-
-            }
-        }
-
+        //파일 업로드
+        fileService.fileupload( files ,boards);
 
         // 멤버수에 맞는 feedbackstatus 테이블 등록 및 글 생성 알람 메시지 저장
-
         FeedbackStatusAndAlarm(boards,memberId,workId,teamId);
-        return multiWriteResponse.from( boards);
+        return multiWriteResponse.from(boards);
 
     }
 
@@ -174,19 +138,19 @@ public class BoardService {
         return boardResponses;
     }
 
-    public List<BoardWorkDto> workList(Long teamId) {
+    public List<BoardWorkVo> workList(Long teamId) {
         return workerServiceClient.findWorksByTeamId(teamId);
     }
 
-    public List<ResponseTeamMember> teamMemberList(Long teamId) {
+    public List<MemberVo> teamMemberList(Long teamId) {
         return teamServiceClient.findTeamById(teamId);
     }
 
     //특정 게시글 불러오기
     public BoardDetailResponse boardView(Long id){
         Boards boards = boardRepository.findBoardById(id);
-        WorkResponse workResponse=workerServiceClient.findWorkById(boards.getWorkId());
-        ResponseTeamMember memberDto=memberServiceClient.findByUserId(boards.getUserId());
+        WorkVo workResponse=workerServiceClient.findWorkById(boards.getWorkId());
+        MemberVo memberDto=memberServiceClient.findByUserId(boards.getUserId());
         return BoardDetailResponse.from(boards,memberDto,workResponse);
     }
 
@@ -195,7 +159,7 @@ public class BoardService {
     //추후에 수정요청을 한 사람에게만 알람이 가도록, 그리고 수정요청을 받지 않더라도 글 작성자가
     //게시글을 수정하고 싶을 경우에도 생각해야함.
     //다중 파일 글 재작성
-    public multiWriteResponse multiReWrite(Long boardId,Long workId,BoardWriteRequest request, MultipartFile[] files) throws Exception{
+    public multiWriteResponse multiReWrite(Long boardId,Long workId,BoardWriteRequest request, MultipartFile[] files) throws IOException {
         String projectPath= "/src/main/resources/static/files";
 
         Boards boards = boardRepository.findBoardById(boardId);
@@ -237,13 +201,14 @@ public class BoardService {
 
     public void reWrtieCompletionAlarm(Boards boards){
         // 해당 팀에 속한 모든 멤버 가져와서 FeedbackStatuses에 추가
-        List<ResponseTeamMember> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
         List<FeedbackStatuses> feedbackStatusesList=feedbackStatusRepository.findByBoardsId(boards.getId());
-        ResponseTeamMember writers=memberServiceClient.findByUserId(boards.getUserId());
+        List<MemberVo> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
+        MemberVo writers=memberServiceClient.findByUserId(boards.getUserId());
+        WorkVo workResponse=workerServiceClient.findWorkById(boards.getWorkId());
 
-        WorkResponse workResponse=workerServiceClient.findWorkById(boards.getWorkId());
+
         for (int i = 0; i < allMembers.size(); i++) {
-            ResponseTeamMember memberResponse=allMembers.get(i);
+            MemberVo memberResponse=allMembers.get(i);
             FeedbackStatuses feedbackStatuses=feedbackStatusesList.get(i);
             if (memberResponse == null || memberResponse.getId().equals(boards.getUserId())) {continue;}
 
@@ -285,10 +250,10 @@ public class BoardService {
     //wiriter은 게시판 작성자
     @Transactional
     public void FeedbackStatusAndAlarm(Boards boards, Long writerId, Long workId, Long teamId) {
-        ResponseTeamMember selectedMember = null;
-        List<ResponseTeamMember> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
-        ResponseTeamMember writers=memberServiceClient.findByUserId(writerId);
-        WorkResponse works=workerServiceClient.findWorkById(workId);
+        MemberVo selectedMember = null;
+        List<MemberVo> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
+        MemberVo writers=memberServiceClient.findByUserId(writerId);
+        WorkVo works=workerServiceClient.findWorkById(workId);
         // FeedbackStatuses 및 Alarms 생성 및 설정을 수행하고 컬렉션에 추가
         List<FeedbackStatuses> feedbackStatusesList = allMembers.stream().map(member -> {
             FeedbackStatuses feedbackStatuses = new FeedbackStatuses();

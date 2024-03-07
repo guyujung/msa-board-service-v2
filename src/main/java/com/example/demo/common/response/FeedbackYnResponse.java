@@ -1,4 +1,5 @@
-package com.example.demo.src.file.common;
+package com.example.demo.common.response;
+
 
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class FeedbackYnResponse<T> {
     }
 
 
-    public static <T> FeedbackYnResponse<T> of(ResponseCode responseCode, T content, int feedbackYn, String pictureUrl,String userName,int studentNumber) {
+    public static <T> FeedbackYnResponse<T> of(ResponseCode responseCode, T content, int feedbackYn, String pictureUrl, String userName, int studentNumber) {
         Status status = Status.builder()
                 .code(responseCode.getCode())
                 .message(responseCode.getMessage())

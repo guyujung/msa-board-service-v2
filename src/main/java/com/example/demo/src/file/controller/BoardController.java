@@ -1,11 +1,12 @@
 //코드 수정할거 request,response DTO로 변환
 package com.example.demo.src.file.controller;
 
+
+import com.example.demo.common.code.CommonCode;
+import com.example.demo.common.response.BoardListResponse;
+import com.example.demo.common.response.Response;
 import com.example.demo.src.file.Repository.FileRepository;
 import com.example.demo.src.file.Service.BoardService;
-import com.example.demo.src.file.common.BoardListResponse;
-import com.example.demo.src.file.common.CommonCode;
-import com.example.demo.src.file.common.Response;
 import com.example.demo.src.file.dto.request.BoardWriteRequest;
 import com.example.demo.src.file.dto.response.BoardDetailResponse;
 import com.example.demo.src.file.dto.response.BoardResponse;
@@ -13,22 +14,21 @@ import com.example.demo.src.file.dto.response.PostsResponse;
 import com.example.demo.src.file.dto.response.multiWriteResponse;
 import com.example.demo.src.file.vo.*;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Path;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/")
 public class BoardController {
 
-    private final BoardService boardService;
+    private  BoardService boardService;
     private FileRepository fileRepository;
 
 
@@ -60,8 +60,8 @@ public class BoardController {
 
         List<BoardResponse> boardResponses = boardService.boardList(memberId, teamId);
 
-        List<BoardWorkDto> workResponses=boardService.workList(teamId);
-        List<ResponseTeamMember> memberResponses=boardService.teamMemberList(teamId);
+        List<BoardWorkVo> workResponses=boardService.workList(teamId);
+        List<MemberVo> memberResponses=boardService.teamMemberList(teamId);
 
         return ResponseEntity.ok(BoardListResponse.of(CommonCode.GOOD_REQUEST, boardResponses,workResponses,memberResponses));
     }
@@ -73,8 +73,8 @@ public class BoardController {
 
         List<BoardResponse> boardResponses = boardService. professorBoardList(teamId);
 
-        List<BoardWorkDto> workResponses=boardService.workList(teamId);
-        List<ResponseTeamMember> memberResponses=boardService.teamMemberList(teamId);
+        List<BoardWorkVo> workResponses=boardService.workList(teamId);
+        List<MemberVo> memberResponses=boardService.teamMemberList(teamId);
 
         return ResponseEntity.ok(BoardListResponse.of(CommonCode.GOOD_REQUEST, boardResponses,workResponses,memberResponses));
     }
@@ -90,10 +90,10 @@ public class BoardController {
 
     //게시판 삭제
     @DeleteMapping("board/delete/{boardId}")
-    public String boardDelete(@PathVariable("boardId") Long id){
+    public ResponseEntity<Response<String>> boardDelete(@PathVariable("boardId") Long id){
 
        boardService.boardDelete(id);
-       return "삭제 성공";
+        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, "게시판 삭제 성공"));
     }
 
 
@@ -105,16 +105,17 @@ public class BoardController {
                                                                     @PathVariable("teamId") Long teamId,
                                                                     @PathVariable("workId") Long workId,
                                                                @Valid BoardWriteRequest request,
-                                                               @PathVariable(value = "files", required = false) MultipartFile[] files) throws Exception {
-        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, boardService.multiReWrite(boardId,workId,request, files )));
+                                                               @PathVariable(value = "files", required = false) MultipartFile[] files) throws IOException {
+        multiWriteResponse multiWriteResponse=boardService.multiReWrite(boardId,workId,request, files);
+        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST,  multiWriteResponse));
     }
 
     //workId에 해당하는 모든 게시글 반환
     @GetMapping("/board/posts/{workId}")
-    public ResponseEntity<List<PostsResponse>> getPostsByWorkId(@PathVariable("workId") Long workId){
+    public ResponseEntity<Response<List<PostsResponse>>> getPostsByWorkId(@PathVariable("workId") Long workId){
         List<PostsResponse> postsByWorkId = boardService.getPosts(workId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(postsByWorkId);
+        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, postsByWorkId));
     }
 }
 

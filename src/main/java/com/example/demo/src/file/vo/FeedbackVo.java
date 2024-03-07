@@ -4,7 +4,7 @@ import com.example.demo.src.file.domain.Boards;
 import lombok.Data;
 
 @Data
-public class FeedbackResponse {
+public class FeedbackVo {
 
     private Long id;
 

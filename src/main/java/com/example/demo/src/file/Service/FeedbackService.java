@@ -14,18 +14,14 @@ import com.example.demo.src.file.dto.request.FeedbackRequest;
 import com.example.demo.src.file.dto.response.FeedbackResponse;
 
 import com.example.demo.src.file.dto.response.OneBoardIdResponse;
-import com.example.demo.src.file.vo.ResponseTeamMember;
-import com.example.demo.src.file.vo.TeamMemberResponse;
-import com.example.demo.src.file.vo.WorkResponse;
-import com.example.demo.src.file.vo.WorkersResponse;
+import com.example.demo.src.file.vo.MemberVo;
+import com.example.demo.src.file.vo.TeamMemberVo;
+import com.example.demo.src.file.vo.WorkVo;
+import com.example.demo.src.file.vo.WorkersVo;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,9 +36,9 @@ public class FeedbackService {
     private BoardRepository boardRepository;
     private FeedbackStatusRepository feedbackStatusRepository;
     private AlarmRepository alarmRepository;
+
     @Autowired
     WorkerServiceClient workerServiceClient;
-
     @Autowired
     TeamServiceClient teamServiceClient;
     @Autowired
@@ -52,8 +48,8 @@ public class FeedbackService {
     public FeedbackResponse save(Long boardId, Long memberId, FeedbackRequest requset, Integer isApproved) {
         //피드백 등록
         Boards boards = boardRepository.findBoardById(boardId);
-        ResponseTeamMember writers = memberServiceClient.findByUserId(memberId);//피드백 작성자
-        WorkResponse workResponse=workerServiceClient.findWorkById(boards.getWorkId());
+        MemberVo writers = memberServiceClient.findByUserId(memberId);//피드백 작성자
+        WorkVo workResponse=workerServiceClient.findWorkById(boards.getWorkId());
         // FeedbackStatuses feedbackStatuses = feedbackStatusRepository.findByBoardsIdAndUsersId(boards.getId(), writers.getId());
 
         Feedbacks feedbacks = toEntity(requset);
@@ -68,7 +64,7 @@ public class FeedbackService {
         return FeedbackResponse.from(feedbacks, boards,writers);
     }
 
-    public void OneTeaamMemberAgreeCheck(Feedbacks feedbacks,Integer isApproved, Boards boards, ResponseTeamMember writers,WorkResponse workResponse) {
+    public void OneTeaamMemberAgreeCheck(Feedbacks feedbacks, Integer isApproved, Boards boards, MemberVo writers, WorkVo workResponse) {
 
 
         //-----------------------------
@@ -89,7 +85,7 @@ public class FeedbackService {
         // 작업이 종료되지 않은 경우
         long hoursDifference = ChronoUnit.HOURS.between(currentTime, workResponse.getEndDate());
         if (workResponse.getEndDate().isAfter(currentTime)) {
-            TeamMemberResponse teamMembers = teamServiceClient.findByTeamsIdAndUsersId(boards.getTeamId(),writers.getId());
+            TeamMemberVo teamMembers = teamServiceClient.findByTeamsIdAndUsersId(boards.getTeamId(),writers.getId());
             teamMembers.setContribution(1);
             teamServiceClient.addContribution(teamMembers);
         } else if (hoursDifference <= 24) {
@@ -117,7 +113,7 @@ public class FeedbackService {
     }
 
     //멤버수에 맞는 feedbackstatus 테이블 등록 및 글 생성 알람 메시지 저장
-    public void FeedbackStatusAndAlarm(Boards boards, ResponseTeamMember writers,WorkResponse workResponse) { //wrtier은 feedback작성자
+    public void FeedbackStatusAndAlarm(Boards boards, MemberVo writers, WorkVo workResponse) { //wrtier은 feedback작성자
 
         //피드백에서 수정 요청 시 모든 팀의 모든 팀원들에게 알람이 감
         String userName = writers.getName(); //피드백 작성자 이름
@@ -128,9 +124,9 @@ public class FeedbackService {
 
         String message = "'" + studentNumber + " " + userName + "'님께서 '[" + workName + "]" + title + "'에 대해 수정 요청을 하였습니다.";
         String url = "/board/view/" + boards.getId();
-        List<ResponseTeamMember> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
+        List<MemberVo> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
 
-        for (ResponseTeamMember member : allMembers) {
+        for (MemberVo member : allMembers) {
 
             if (member.equals(writers)) {
                 continue;
@@ -151,7 +147,7 @@ public class FeedbackService {
 
 
     //게시글 당 피드백 완료시 작업 점수
-    public void AllTeamMemberAgreeCheck(Boards boards, WorkResponse workResponse) {
+    public void AllTeamMemberAgreeCheck(Boards boards, WorkVo workResponse) {
 
         // Board에 해당하는 모든 FeedbackStatuses 조회
         List<FeedbackStatuses> feedbackStatusesList = feedbackStatusRepository.findByBoards(boards);
@@ -178,13 +174,13 @@ public class FeedbackService {
                // System.out.println("시간 차이"+hoursDifference);
                 if (workResponse.getEndDate().isAfter(boards.getCreatedAt())) {
                 //    System.out.println("마감일 이내");
-                    TeamMemberResponse teamMembers = teamServiceClient.findByTeamsIdAndUsersId(boards.getTeamId(),boards.getUserId());
+                    TeamMemberVo teamMembers = teamServiceClient.findByTeamsIdAndUsersId(boards.getTeamId(),boards.getUserId());
                     int importance =  workResponse.getImportance();
                     teamMembers.setContribution(importance);
                     teamServiceClient.addContribution(teamMembers);
                 }else if (0<hoursDifference && hoursDifference <= 24) {// 작성자가 마감일 전에 작성했으면 점수를 절반만 받을 수 있음
                 //    System.out.println("24시간 이내");
-                    TeamMemberResponse teamMembers = teamServiceClient.findByTeamsIdAndUsersId(boards.getTeamId(),boards.getUserId());
+                    TeamMemberVo teamMembers = teamServiceClient.findByTeamsIdAndUsersId(boards.getTeamId(),boards.getUserId());
                     float importance =  workResponse.getImportance();
                     teamMembers.setContribution(importance/2);
                     teamServiceClient.addContribution(teamMembers);
@@ -204,12 +200,12 @@ public class FeedbackService {
 
 
     //완료 작업 status 4
-    public void AllWorkComplCheck(Boards boards, WorkResponse workResponse) {
+    public void AllWorkComplCheck(Boards boards, WorkVo workResponse) {
 
-        List<WorkersResponse> workersResponseList =workerServiceClient.findWorkerById(workResponse.getId());
+        List<WorkersVo> workersVoList =workerServiceClient.findWorkerById(workResponse.getId());
 
-        List<Long> userIdList = workersResponseList.stream()
-                .map(WorkersResponse::getUserId)
+        List<Long> userIdList = workersVoList.stream()
+                .map(WorkersVo::getUserId)
                 .collect(Collectors.toList());
 
         List<OneBoardIdResponse> boardList =boardRepository.findByUserIdInAndWorkId(userIdList,workResponse.getId());
@@ -248,7 +244,7 @@ public class FeedbackService {
     }
 
 
-    public void allFeedbackCompleteAlarm(Boards boards,WorkResponse workResponse) { //wrtier은 feedback작성자
+    public void allFeedbackCompleteAlarm(Boards boards, WorkVo workResponse) { //wrtier은 feedback작성자
 
         //알림 기능, 글 등록 시 모든 팀의 모든 팀원들에게 알람이 감
 
@@ -259,9 +255,9 @@ public class FeedbackService {
         String url = "/board/view/" + boards.getId();
 
         // 해당 팀에 속한 모든 멤버 가져와서 FeedbackStatuses에 추가
-        List<ResponseTeamMember> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
+        List<MemberVo> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
 
-        for (ResponseTeamMember member : allMembers) {
+        for (MemberVo member : allMembers) {
 
             Alarms alarms = new Alarms();
             alarms.setUserId(member.getId());// 연관관계 설정, board의 작성자로 저장
@@ -284,8 +280,8 @@ public class FeedbackService {
 
     public void reFeedback(Long boardId, Long memberId, Integer isApproved) { //재수락할지, 거절할지
         Boards boards = boardRepository.findBoardById(boardId);
-        ResponseTeamMember writers=memberServiceClient.findByUserId(memberId);
-        WorkResponse workResponse=workerServiceClient.findWorkById(boards.getWorkId());
+        MemberVo writers=memberServiceClient.findByUserId(memberId);
+        WorkVo workResponse=workerServiceClient.findWorkById(boards.getWorkId());
         //boards, writers로 feedbackStatus찾기
         FeedbackStatuses feedbackStatus = feedbackStatusRepository.findByBoardsIdAndUsersId(boardId, memberId);
         if (isApproved == 1) {
@@ -306,7 +302,7 @@ public class FeedbackService {
     }
 
 
-    public void reFeedbackAlarmDeny(Boards boards, ResponseTeamMember writers,WorkResponse workResponse) { //wrtier은 feedback작성자
+    public void reFeedbackAlarmDeny(Boards boards, MemberVo writers, WorkVo workResponse) { //wrtier은 feedback작성자
 
         //알림 기능, 글 등록 시 모든 팀의 모든 팀원들에게 알람이 감
         String userName = writers.getName(); //피드백 작성자 이름
@@ -314,11 +310,11 @@ public class FeedbackService {
         String workName = workResponse.getWorkName();//작업이름
         String title = boards.getTitle(); //게시판 제목
 
-        List<ResponseTeamMember> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
+        List<MemberVo> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
         String message = "'" + studentNumber + " " + userName + "'님께서 '[" + workName + "]" + title + "'작성자님의 수정에 대해 거절을 하였습니다.";
         String url = "/board/view/" + boards.getId();
         System.out.println("writers"+writers);
-        for (ResponseTeamMember member : allMembers) {
+        for (MemberVo member : allMembers) {
 
             if(member.getId().equals(writers.getId())){
 
@@ -336,7 +332,7 @@ public class FeedbackService {
 
     }
 
-    public void reFeedbackAlarmAgree(Boards boards, ResponseTeamMember writers,WorkResponse workResponse) { //wrtier은 feedback작성자
+    public void reFeedbackAlarmAgree(Boards boards, MemberVo writers, WorkVo workResponse) { //wrtier은 feedback작성자
 
         //알림 기능, 글 등록 시 모든 팀의 모든 팀원들에게 알람이 감
         String userName = writers.getName(); //피드백 작성자 이름
@@ -344,11 +340,11 @@ public class FeedbackService {
         String workName = workResponse.getWorkName();//작업이름
         String title = boards.getTitle(); //게시판 제목
 
-        List<ResponseTeamMember> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
+        List<MemberVo> allMembers = teamServiceClient.findTeamById(boards.getTeamId());
 
         String message = "'" + studentNumber + " " + userName + "'님께서 '[" + workName + "]" + title + "'작성자님의 수정에 대해 수락하였습니다.";
         String url = "/board/view/" + boards.getId();
-        for (ResponseTeamMember member : allMembers) {
+        for (MemberVo member : allMembers) {
 
             if(member.getId().equals(writers.getId())){continue;}
             Alarms alarms = new Alarms();

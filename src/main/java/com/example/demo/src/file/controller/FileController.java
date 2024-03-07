@@ -2,15 +2,11 @@
 
 
 package com.example.demo.src.file.controller;
-
-import com.example.demo.config.BaseException;
-import com.example.demo.config.BaseResponseStatus;
+import com.example.demo.common.code.CommonCode;
+import com.example.demo.common.response.Response;
 import com.example.demo.src.file.Repository.FileRepository;
 import com.example.demo.src.file.Service.FileService;
-import com.example.demo.src.file.common.CommonCode;
-import com.example.demo.src.file.common.Response;
 import com.example.demo.src.file.domain.Files;
-import com.example.demo.src.file.vo.FileResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.FileUrlResource;
@@ -32,23 +28,6 @@ public class FileController {
     private FileRepository fileRepository;
 
 
-
-
-
-
- /*   //파일 객체로 삭제
-    @DeleteMapping("/files/Object/delete")
-    public  ResponseEntity<Response<String>> deleteFilesByObject(@RequestBody List<Files> files) throws BaseException{
-        try {
-            fileService.deletePhotoFromFileSystem(files); // 서비스 메서드 호출
-            return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, "파일 삭제 성공"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BaseException(BaseResponseStatus.SERVER_ERROR);
-        }
-    }*/
-
-
     //파일 다운로드
     @GetMapping("/downloadFile/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId, HttpServletRequest request) throws IOException {
@@ -58,7 +37,7 @@ public class FileController {
         Resource resource = new FileUrlResource("src/main/resources/static"+files.getFilepath());
         String contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
 
-        if (contentType == null) {
+        if (contentType == null) { //null인 경우, 해당 파일의 MIME 타입이 정확하게 식별되지 않음
             contentType = "application/octet-stream";
         }
 
@@ -69,14 +48,10 @@ public class FileController {
     }
 
     @DeleteMapping("/files/delete")
-    public ResponseEntity<Response<String>> deleteFiles(@RequestBody List<Long> fileIdList) throws BaseException{
-        try {
-            fileService.deleteFileSystem(fileIdList); // 서비스 메서드 호출
+    public ResponseEntity<Response<String>> deleteFiles(@RequestBody List<Long> fileIdList) {
+            fileService.deleteFileSystem(fileIdList);
             return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, "파일 삭제 성공"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BaseException(BaseResponseStatus.SERVER_ERROR);
-        }
+
     }
 
 

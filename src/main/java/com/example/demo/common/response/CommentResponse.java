@@ -1,4 +1,5 @@
-package com.example.demo.src.file.common;
+package com.example.demo.common.response;
+
 
 import lombok.Builder;
 import lombok.Getter;
@@ -7,12 +8,12 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class BoardListResponse<T> {
+public class CommentResponse<T> {
 
     private final Status status;
-    private final T content;
-    private final T work;
-    private  final T member;
+    private final T feedback;
+    private final T feedbackStatus;
+    private  final T writer;
 
     @Getter
     @Builder
@@ -22,13 +23,13 @@ public class BoardListResponse<T> {
     }
 
 
-    public static <T> BoardListResponse<T> of(ResponseCode responseCode, T content, T work, T member) {
+    public static <T> CommentResponse<T> of(ResponseCode responseCode, T feedback, T feedbackStatus, T writer) {
         Status status = Status.builder()
                 .code(responseCode.getCode())
                 .message(responseCode.getMessage())
                 .build();
 
-        return new BoardListResponse<>(status, content, work, member);
+        return new CommentResponse<>(status, feedback, feedbackStatus, writer);
     }
 
 }

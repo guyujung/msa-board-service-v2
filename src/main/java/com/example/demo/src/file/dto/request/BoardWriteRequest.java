@@ -1,6 +1,7 @@
 package com.example.demo.src.file.dto.request;
 
 
+import com.example.demo.src.file.domain.Boards;
 import lombok.Data;
 
 @Data
@@ -11,11 +12,14 @@ public class BoardWriteRequest{
 
     private String content;
 
-
-//사용자명과 작업명은 추후 추가해야함
-//private String username;
-
-//private String workname;
-
+public static Boards toEntity(BoardWriteRequest boardWriteRequest, Long memberId, Long teamId, Long workId) {
+    return Boards.builder()
+            .title(boardWriteRequest.getTitle())
+            .content(boardWriteRequest.getContent())
+            .memberId(memberId)
+            .teamId(teamId)
+            .workId(workId)
+            .build();
+}
 
 }

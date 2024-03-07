@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class WorkResponse {
+public class WorkVo {
 
     private Long id;
     private Long teamId;
@@ -17,12 +17,12 @@ public class WorkResponse {
     private Integer workerNumber;
     private LocalDateTime endDate;
 
-    public WorkResponse() {
+    public WorkVo() {
         // 기본 생성자 내용 (선택적)
     }
 
     @Builder
-    public WorkResponse(Long workId, String workName){
+    public WorkVo(Long workId, String workName){
         this.id=workId;
         this.workName=workName;
     }

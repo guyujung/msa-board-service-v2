@@ -3,8 +3,8 @@ package com.example.demo.src.file.dto.response;
 import com.example.demo.src.file.domain.Boards;
 import com.example.demo.src.file.domain.Files;
 
-import com.example.demo.src.file.vo.ResponseTeamMember;
-import com.example.demo.src.file.vo.WorkResponse;
+import com.example.demo.src.file.vo.MemberVo;
+import com.example.demo.src.file.vo.WorkVo;
 import lombok.Builder;
 import lombok.Data;
 
@@ -54,7 +54,7 @@ public class BoardDetailResponse {
     }
 
 
-    public static BoardDetailResponse from(Boards boards, ResponseTeamMember memberResponse, WorkResponse workResponse) {
+    public static BoardDetailResponse from(Boards boards, MemberVo memberResponse, WorkVo workResponse) {
         BoardDetailResponseBuilder responseBuilder = BoardDetailResponse.builder()
                 .boardId(boards.getId())
                 .title(boards.getTitle())

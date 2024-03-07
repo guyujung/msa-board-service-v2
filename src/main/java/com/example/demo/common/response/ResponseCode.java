@@ -1,9 +1,8 @@
-package com.example.demo.src.file.common;
+package com.example.demo.common.response;
 
 public interface ResponseCode {
     int getCode();
 
     String getMessage();
-
 
 }

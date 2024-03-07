@@ -4,7 +4,7 @@ package com.example.demo.src.file.vo;
 import lombok.Data;
 
 @Data
-public class TeamResponse {
+public class TeamVo {
 
     private Long id;
     private Long projectId;

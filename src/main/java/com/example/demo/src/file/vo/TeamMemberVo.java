@@ -4,7 +4,7 @@ package com.example.demo.src.file.vo;
 import lombok.Data;
 
 @Data
-public class TeamMemberResponse {
+public class TeamMemberVo {
 
     private Long id;
 
@@ -14,7 +14,7 @@ public class TeamMemberResponse {
 
     private float contribution;
 
-    TeamMemberResponse(){
+    TeamMemberVo(){
 
     }
 }
