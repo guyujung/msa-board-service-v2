@@ -7,9 +7,7 @@ import lombok.Data;
 @Data
 public class BoardWriteRequest{
     private Long boardId;
-
     private String title;
-
     private String content;
 
 public static Boards toEntity(BoardWriteRequest boardWriteRequest, Long memberId, Long teamId, Long workId) {

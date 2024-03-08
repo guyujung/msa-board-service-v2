@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.http.ContentDisposition;
 
 @Entity
 @Getter
@@ -36,11 +37,11 @@ public class Files {
         this.boards = boards;
         boards.addFiles(this);
     }
-
     @Builder
     public Files(String filename, String filepath){
         this.filename=filename;
 
         this.filepath=filepath;
     }
+
 }

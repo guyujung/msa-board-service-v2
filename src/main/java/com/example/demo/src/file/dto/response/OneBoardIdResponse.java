@@ -7,9 +7,6 @@ import lombok.Data;
 
 @Data
 public class OneBoardIdResponse {
-
-
-
     private Long boardId;
     private boolean feedbackYn;
 

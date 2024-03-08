@@ -3,15 +3,12 @@ package com.example.demo.src.file.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 
 @EntityListeners(AuditingEntityListener.class)
-@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "Feedback_statuses")
 @Getter
@@ -56,6 +53,17 @@ public class FeedbackStatuses {
         this.feedbackYn = 2;
     }
 
+    @Builder
+    public FeedbackStatuses( Boards boards ,Long userId,Long teamId, Integer feedbackId){
+        this.boards=boards;
+        this.userId=userId;
+        this.teamId=teamId;
+        this.feedbackYn=feedbackId;
+
+    }
+    public  FeedbackStatuses(){
+
+    }
 
 
 }

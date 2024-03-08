@@ -12,18 +12,9 @@ import java.time.LocalDateTime;
 public class BoardFeedbackResponse  {
 
     private Long feedbackId;
-
-
     private String comment;
-
     private LocalDateTime createdAt;
     private Long userId;
-
-    /*
-    private String userName;
-
-    private String pictureUrl;
-*/
     private Integer modReq;
 
 

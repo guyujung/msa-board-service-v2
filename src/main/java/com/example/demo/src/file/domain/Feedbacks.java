@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Feedbacks extends FeedbackTimeEntity {
     @Id
@@ -38,7 +39,6 @@ public class Feedbacks extends FeedbackTimeEntity {
 
 
 
-
     //연관관계 편의 메소드
     public void confirmBoard(Boards boards){
         this.boards = boards;
@@ -46,18 +46,18 @@ public class Feedbacks extends FeedbackTimeEntity {
     }
 
 
-
-
     // comment 필드의 getter 메서드 정의
     public String getComment() {
         return comment;
     }
 
+
     @Builder
-    public Feedbacks(Long id, Boards boards, String comment){
-        this.id=id;
+    public Feedbacks(Long feedbackId,  String comment,Boards boards,Long writerId){
+        this.id=feedbackId;
         this.boards = boards;
         this.comment=comment;
+        this.writerId=writerId;
         this.modReq=0;
     }
 

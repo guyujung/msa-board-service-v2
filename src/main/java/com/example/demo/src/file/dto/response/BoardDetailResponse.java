@@ -2,12 +2,10 @@ package com.example.demo.src.file.dto.response;
 
 import com.example.demo.src.file.domain.Boards;
 import com.example.demo.src.file.domain.Files;
-
 import com.example.demo.src.file.vo.MemberVo;
 import com.example.demo.src.file.vo.WorkVo;
 import lombok.Builder;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,17 +22,12 @@ public class BoardDetailResponse {
     private List<Long> fileId;
     private String workName;
     private Long writerId;
-    //왜 지웠는지?
     private Long workId;
-
     private String writer;
     private Integer studentNumber;
     private String pictureURL;
 
-//사용자명과 작업명은 추후 추가해야함
-//private String username;
 
-//private String workname;
 
     @Builder
     public BoardDetailResponse(Long boardId, String title,String content,LocalDateTime createdAt,List<String> fileDirs,List<Long> fileId,String workName, Long writerId,Long workId,String writer, Integer studentNumber, String pictureURL){

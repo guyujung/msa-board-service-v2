@@ -5,14 +5,11 @@ package com.example.demo.src.file.controller;
 import com.example.demo.common.code.CommonCode;
 import com.example.demo.common.response.BoardListResponse;
 import com.example.demo.common.response.Response;
-import com.example.demo.src.file.Repository.FileRepository;
+import com.example.demo.src.file.Repository.BoardRepository;
 import com.example.demo.src.file.Service.BoardService;
+import com.example.demo.src.file.domain.Boards;
 import com.example.demo.src.file.dto.request.BoardWriteRequest;
-import com.example.demo.src.file.dto.response.BoardDetailResponse;
-import com.example.demo.src.file.dto.response.BoardResponse;
-import com.example.demo.src.file.dto.response.PostsResponse;
-import com.example.demo.src.file.dto.response.multiWriteResponse;
-import com.example.demo.src.file.vo.*;
+import com.example.demo.src.file.dto.response.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,20 +20,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/")
 public class BoardController {
 
     private  BoardService boardService;
-    private FileRepository fileRepository;
 
-
-    //파일 한번에 여러게 업로드 및 게시글 작성
-    @Transactional
+    //조회수 증가 로직
     @PostMapping("/board/upcount/{boardId}")
     public void upcount( @PathVariable("boardId") Long boardId ) {
-        //조회수 증가 로직
+
         boardService.increaseCount(boardId);
     }
 
@@ -51,38 +46,42 @@ public class BoardController {
         return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST,boardService.multiWrite(request,memberId,teamId,workId,files)));
     }
 
-
-    //게시글 리스트+페이징 추후 필요+정렬 필요
-    @GetMapping("/board/list/{memberId}/{teamId}")
-    public ResponseEntity<BoardListResponse<?>> boardList(
-            @PathVariable("memberId") Long memberId,
-            @PathVariable("teamId") Long teamId) {
-
-        List<BoardResponse> boardResponses = boardService.boardList(memberId, teamId);
-
-        List<BoardWorkVo> workResponses=boardService.workList(teamId);
-        List<MemberVo> memberResponses=boardService.teamMemberList(teamId);
-
-        return ResponseEntity.ok(BoardListResponse.of(CommonCode.GOOD_REQUEST, boardResponses,workResponses,memberResponses));
+    //다중 파일 게시판 수정
+    @Transactional
+    @PostMapping("/multiboard/update/{boardId}/{memberId}/{teamId}/{workId}") //mod_compl, 수정을 완료했는지
+    public ResponseEntity<Response<multiWriteResponse>> multiboardModify(@PathVariable("boardId") Long boardId,
+                                                                         @PathVariable("memberId") Long memberId,
+                                                                         @PathVariable("teamId") Long teamId,
+                                                                         @PathVariable("workId") Long workId,
+                                                                         @Valid BoardWriteRequest request,
+                                                                         @PathVariable(value = "files", required = false) MultipartFile[] files) throws IOException {
+        multiWriteResponse multiWriteResponse=boardService.multiReWrite(boardId,workId,request, files);
+        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST,  multiWriteResponse));
     }
 
     //게시글 리스트+페이징 추후 필요+정렬 필요
-    @GetMapping("/professor/board/list/{teamId}")
-    public ResponseEntity<BoardListResponse<?>> professorBoardList(
+    @GetMapping("/board/list/{memberId}/{teamId}")
+    public ResponseEntity<Response<CombinedListResponse>> boardList(
+            @PathVariable("memberId") Long memberId,
             @PathVariable("teamId") Long teamId) {
 
-        List<BoardResponse> boardResponses = boardService. professorBoardList(teamId);
+        CombinedListResponse combinedResponse = boardService.boardList(memberId, teamId);
+        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, combinedResponse));
+    }
 
-        List<BoardWorkVo> workResponses=boardService.workList(teamId);
-        List<MemberVo> memberResponses=boardService.teamMemberList(teamId);
 
-        return ResponseEntity.ok(BoardListResponse.of(CommonCode.GOOD_REQUEST, boardResponses,workResponses,memberResponses));
+    //게시글 리스트+페이징 추후 필요+정렬 필요
+    @GetMapping("/professor/board/list/{teamId}")
+    public ResponseEntity<Response<CombinedListResponse>> professorBoardList(
+            @PathVariable("teamId") Long teamId) {
+        CombinedListResponse combinedResponse = boardService. professorBoardList(teamId);
+        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, combinedResponse));
     }
 
 
     //특정 게시글 눌렀을 때 상세 페이지 생성
     @GetMapping("/board/view/{boardId}/{memberId}/{teamId}")
-    public ResponseEntity<Response<BoardDetailResponse>> boardDetailView(@PathVariable("boardId") Long id,@PathVariable("memberId") Long memberId,
+    public ResponseEntity<Response<CombinedResponse>> boardDetailView(@PathVariable("boardId") Long id,@PathVariable("memberId") Long memberId,
                                                                          @PathVariable("teamId") Long teamId){
 
         return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, boardService.boardView(id)));
@@ -96,20 +95,6 @@ public class BoardController {
         return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, "게시판 삭제 성공"));
     }
 
-
-
-    //다중 파일 게시판 수정
-    @PostMapping("/multiboard/update/{boardId}/{memberId}/{teamId}/{workId}") //mod_compl, 수정을 완료했는지
-    public ResponseEntity<Response<multiWriteResponse>> multiboardModify(@PathVariable("boardId") Long boardId,
-                                                                    @PathVariable("memberId") Long memberId,
-                                                                    @PathVariable("teamId") Long teamId,
-                                                                    @PathVariable("workId") Long workId,
-                                                               @Valid BoardWriteRequest request,
-                                                               @PathVariable(value = "files", required = false) MultipartFile[] files) throws IOException {
-        multiWriteResponse multiWriteResponse=boardService.multiReWrite(boardId,workId,request, files);
-        return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST,  multiWriteResponse));
-    }
-
     //workId에 해당하는 모든 게시글 반환
     @GetMapping("/board/posts/{workId}")
     public ResponseEntity<Response<List<PostsResponse>>> getPostsByWorkId(@PathVariable("workId") Long workId){
@@ -117,6 +102,7 @@ public class BoardController {
 
         return ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, postsByWorkId));
     }
+
 }
 
 

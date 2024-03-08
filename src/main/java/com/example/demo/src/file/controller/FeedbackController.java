@@ -12,6 +12,7 @@ import com.example.demo.src.file.client.TeamServiceClient;
 
 import com.example.demo.src.file.dto.request.FeedbackRequest;
 import com.example.demo.src.file.dto.response.BoardFeedbackResponse;
+import com.example.demo.src.file.dto.response.CombinedListResponse;
 import com.example.demo.src.file.dto.response.FeedbackResponse;
 import com.example.demo.src.file.dto.response.FeedbackStatusFeedbackYnUserIdResponse;
 
@@ -66,17 +67,10 @@ public class FeedbackController {
     //feedback의 거절 승인은 한번하여 번복이 없음. feedback 승인,여부가 필요함
     @GetMapping("/comment/{boardId}/{teamId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CommentResponse<List<?>>>  commentFeedbackView(@PathVariable("boardId") Long boardId,
+    public ResponseEntity<Response<CombinedListResponse>>  commentFeedbackView(@PathVariable("boardId") Long boardId,
                                                                          @PathVariable("teamId") Long teamId){
-    //    Members members=feedbackService.getUsers(memberId);
-        List<FeedbackStatusFeedbackYnUserIdResponse> feedbackStatusesList = feedbackStatusRepository.findFeedbackYnAndUserIdByBoardsId(boardId);
-        System.out.println(feedbackStatusesList.get(0).getFeedbackYn());
-        List<MemberVo> memberResponses=boardService.teamMemberList(teamId);
-        System.out.println(memberResponses.get(0).getName());
-        List<BoardFeedbackResponse> feedbacksList = feedbackRepository.findFeedbackByBoardsId(boardId);
-        System.out.println("hello");
-
-        return  ResponseEntity.ok(CommentResponse.of(CommonCode.GOOD_REQUEST, feedbacksList,feedbackStatusesList,memberResponses));
+        CombinedListResponse combinedListResponse=feedbackService.feedbackView(teamId,boardId);
+        return  ResponseEntity.ok(Response.of(CommonCode.GOOD_REQUEST, combinedListResponse));
     }
 
 

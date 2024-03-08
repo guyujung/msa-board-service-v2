@@ -15,18 +15,14 @@ import java.time.LocalDateTime;
 public class FeedbackResponse {
 
     private Long feedbackId;
-
     private Long boardId;
-
     private String comment;
-
     private LocalDateTime createdAt;
     private Integer studentNumber;
     private String userName;
-
     private String pictureUrl;
-
     private Integer modReq;
+
     public FeedbackResponse() {
 
     }

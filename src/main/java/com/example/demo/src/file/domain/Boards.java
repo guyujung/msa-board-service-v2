@@ -66,11 +66,6 @@ public class Boards extends BaseTimeEntity {
     private List<Files> fileList = new ArrayList<>();
 
 
-    public Boards updateViewCount(Long viewCount){
-        this.viewCnt = viewCount+1;
-        return this;
-    }
-
     //피드백 추가,연관관계 편의 메소드
     public void addFeedbacks(Feedbacks feedbacks){
         //comment의 Post 설정은 comment에서 함

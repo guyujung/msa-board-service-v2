@@ -7,9 +7,7 @@ import lombok.Data;
 public class FeedbackStatusTeamMember {
     private Long userId;
     private String userName;
-
     private String pictureUrl;
-
     private  Integer studentNumber;
 
     @Builder

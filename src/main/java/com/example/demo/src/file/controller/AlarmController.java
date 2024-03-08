@@ -2,10 +2,12 @@ package com.example.demo.src.file.controller;
 
 import com.example.demo.common.code.CommonCode;
 import com.example.demo.common.response.Response;
+
 import com.example.demo.src.file.Service.AlarmService;
 
 import com.example.demo.src.file.dto.response.AlarmDetailResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +32,8 @@ public class AlarmController {
     public void updateSeenStatus(@PathVariable Long alarmId) {
         alarmService.updateSeenStatus(alarmId);
     }
+
+
 }
 
 
