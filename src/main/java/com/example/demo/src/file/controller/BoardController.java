@@ -3,11 +3,8 @@ package com.example.demo.src.file.controller;
 
 
 import com.example.demo.common.code.CommonCode;
-import com.example.demo.common.response.BoardListResponse;
 import com.example.demo.common.response.Response;
-import com.example.demo.src.file.Repository.BoardRepository;
 import com.example.demo.src.file.Service.BoardService;
-import com.example.demo.src.file.domain.Boards;
 import com.example.demo.src.file.dto.request.BoardWriteRequest;
 import com.example.demo.src.file.dto.response.*;
 import jakarta.validation.Valid;

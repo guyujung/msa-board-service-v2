@@ -46,7 +46,7 @@ public class FeedbackService {
 
     //피드백 작성
     public FeedbackResponse save(Long boardId, Long memberId, FeedbackRequest requset, Integer isApproved) {
-        //피드백 등록
+
         Boards boards=boardService.findBoardById(boardId);
         MemberVo writers = memberServiceClient.findByUserId(memberId);//피드백 작성자
         WorkVo workResponse=workerServiceClient.findWorkById(boards.getWorkId());
@@ -61,9 +61,13 @@ public class FeedbackService {
 
     public Feedbacks OneTeaamMemberAgreeCheck(FeedbackRequest request, Integer isApproved, Boards boards, MemberVo writers, WorkVo work) {
         FeedbackStatuses feedbackStatuses = feedbackStatusService.findFeedbackStatusByBoardsIdAndUsersId(boards.getId(), writers.getId());
-
-        if (feedbackStatuses.getFeedbackYn() != 0||feedbackStatuses.getFeedbackYn() == 3) ; //한번도 피드백을 이미 한 경우 예외처리, 글작성 본인인 경우-->예외처리하기
         Feedbacks feedbacks =new Feedbacks(request.getFeedbackId(), request.getComment(),boards,writers.getId());
+        if (feedbackStatuses.getFeedbackYn() != 0||feedbackStatuses.getFeedbackYn() == 3)return feedbacks; //한번도 피드백을 이미 한 경우 예외처리, 글작성 본인인 경우
+
+        TeamMemberVo teamMembers = teamServiceClient.findByTeamsIdAndUsersId(boards.getTeamId(),boards.getUserId());
+        teamMembers.setContribution(1);//피드백 점수 1점 주기
+        teamServiceClient.addContribution(teamMembers);
+
         if (isApproved == 1) {feedbacks.feedbackAgree();}    // 피드백을 처음 달았고 승인한 경우 modReq=true로 바꾸기
         else if ((isApproved == 2)) {feedbacks.feedbackDeny();}; //피드백에서 수정 요청 시  수정 요청한 본인 제외 모든 팀의 모든 팀원들에게 알람이 감
         feedbackRepository.save(feedbacks);
@@ -76,17 +80,13 @@ public class FeedbackService {
     //게시글 당 피드백 완료시 작업 점수
     public void AllTeamMemberAgreeCheck(Boards boards, WorkVo work) {
         List<FeedbackStatuses> feedbackStatusesList = feedbackStatusService.findFeedbackStatusByBoardId(boards.getId());// Board에 해당하는 모든 FeedbackStatuses 조회
-        //feedbackStatuses가 null이면 예외처리
-
-        if (!feedbackStatusesList.isEmpty()) {        // FeedbackStatuses가 존재하는 경우에만 처리
-            boolean hasFeedbackYnTrue = true;
-
-            for (FeedbackStatuses feedbackStatuses : feedbackStatusesList) {// 모든 FeedbackStatuses의 feedback_yn이 true인지 확인
-                if (feedbackStatuses.getFeedbackYn() == 0 || feedbackStatuses.getFeedbackYn() == 2) { //한명이라도 feedback을 안했으면
-                    hasFeedbackYnTrue = false;
-                    break;
-                }
+        boolean hasFeedbackYnTrue = true;
+        for (FeedbackStatuses feedbackStatuses : feedbackStatusesList) {// 모든 FeedbackStatuses의 feedback_yn이 true인지 확인
+            if (feedbackStatuses.getFeedbackYn() == 0 || feedbackStatuses.getFeedbackYn() == 2) { //한명이라도 feedback을 안했으면
+                hasFeedbackYnTrue = false;
+                break;
             }
+        }
 
             if (hasFeedbackYnTrue && boards.isFeedbackYn() == false) {// 모든 FeedbackStatuses의 feedback_yn이 true라면 board의 feedback_yn도 true로 변경
                 long hoursDifference = ChronoUnit.HOURS.between( work.getEndDate(),boards.getCreatedAt());
@@ -105,7 +105,7 @@ public class FeedbackService {
                 alarmService.createAlarmMessageNofilter( boards,  work, allMembers, "complFeedback");//팀원 모두에게 피드백 완료 알람 전송
                 AllWorkComplCheck(boards, work); //workId에 해당하는 모든 게시판 피드백이 완료 되었을시 work의 status를 4로 변경
             }
-        }
+
     }
 
 
