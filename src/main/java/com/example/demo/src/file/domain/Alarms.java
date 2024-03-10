@@ -16,6 +16,17 @@ import lombok.Setter;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Alarms extends FeedbackTimeEntity {
 
+    public Alarms(Long alarmId, String content, String redirectUrl,String pictureUrl, String alarmKind, Long boardId,Long writerId, Long userId) {
+        this.alarmId=alarmId;
+        this.content=content;
+        this.redirectUrl=redirectUrl;
+        this.writerPictureUrl=pictureUrl;
+        this.alarmKind=alarmKind;
+        this.boardId=boardId;
+        this.writerId=writerId;
+        this.userId=userId;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "alarm_id")
@@ -44,6 +55,7 @@ public class Alarms extends FeedbackTimeEntity {
 
     @Column(name = "writer_id")
     private Long writerId;
+
 
 
     @Builder
