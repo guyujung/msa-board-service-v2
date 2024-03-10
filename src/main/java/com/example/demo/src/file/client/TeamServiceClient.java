@@ -16,10 +16,10 @@ import java.util.List;
 public interface TeamServiceClient {
 
     @GetMapping("/teammember/members/{teamId}")
-    List<MemberVo> findTeamById(@PathVariable Long teamId);
+    List<MemberVo> findTeamById(@PathVariable(value="teamId") Long teamId);
 
     @GetMapping("/teammember/member/{teamId}/{memberId}")
-    TeamMemberVo findByTeamsIdAndUsersId(@PathVariable Long teamId, @PathVariable Long memberId);
+    TeamMemberVo findByTeamsIdAndUsersId(@PathVariable(value="teamId") Long teamId, @PathVariable(value="memberId") Long memberId);
 
     @PostMapping("/teammember/add-contribution")
     void addContribution(@RequestBody TeamMemberVo teamMemberVo);

@@ -9,6 +9,7 @@ import com.example.demo.src.file.Service.FileService;
 import com.example.demo.src.file.domain.Files;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileUrlResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -20,14 +21,17 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@AllArgsConstructor
+
 @RequestMapping("/")
 public class FileController {
 
     private final FileService fileService;
-    private FileRepository fileRepository;
+    private final FileRepository fileRepository;
 
-
+public FileController(FileService fileService,FileRepository fileRepository){
+    this.fileService=fileService;
+    this.fileRepository=fileRepository;
+}
     //파일 다운로드
     @GetMapping("/downloadFile/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId, HttpServletRequest request) throws IOException {

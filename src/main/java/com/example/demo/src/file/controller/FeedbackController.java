@@ -27,7 +27,6 @@ import java.util.List;
 
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/")
 public class FeedbackController {
 
@@ -36,6 +35,17 @@ public class FeedbackController {
 
     private final FeedbackRepository feedbackRepository;
     private final BoardService boardService;
+
+    public FeedbackController(
+            FeedbackService feedbackService,
+            FeedbackStatusRepository feedbackStatusRepository,
+            FeedbackRepository feedbackRepository,
+            BoardService boardService) {
+        this.feedbackService = feedbackService;
+        this.feedbackStatusRepository = feedbackStatusRepository;
+        this.feedbackRepository = feedbackRepository;
+        this.boardService = boardService;
+    }
 
     @Autowired
     TeamServiceClient teamServiceClient;

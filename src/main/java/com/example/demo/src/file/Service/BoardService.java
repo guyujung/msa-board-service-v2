@@ -9,6 +9,7 @@ import com.example.demo.src.file.dto.request.BoardWriteRequest;
 import com.example.demo.src.file.dto.response.*;
 import com.example.demo.src.file.vo.*;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,23 +21,35 @@ import java.util.List;
 import static com.example.demo.src.file.dto.request.BoardWriteRequest.toEntity;
 import static java.util.stream.Collectors.toList;
 
-@AllArgsConstructor
+
 @Service
 public class BoardService {
 
 
 
-    private BoardRepository boardRepository;
-    private FileService fileService;
-    private AlarmService alarmService;
-    private FeedbackStatusService feedbackStatusService;
+    private final BoardRepository boardRepository;
+    private final FileService fileService;
+    private final AlarmService alarmService;
+    private final FeedbackStatusService feedbackStatusService;
 
     @Autowired
-    WorkerServiceClient workerServiceClient;
+     WorkerServiceClient workerServiceClient;
     @Autowired
     TeamServiceClient teamServiceClient;
     @Autowired
     MemberServiceClient memberServiceClient;
+
+    @Autowired
+    public  BoardService(BoardRepository boardRepository, FileService fileService, AlarmService alarmService, FeedbackStatusService feedbackStatusService){
+        this.boardRepository=boardRepository;
+        this.fileService=fileService;
+        this.alarmService=alarmService;
+        this.feedbackStatusService=feedbackStatusService;
+
+    }
+
+
+
 
     //조회수 증가
     public void increaseCount(Long boardId) {

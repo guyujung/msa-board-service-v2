@@ -12,6 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface MemberServiceClient {
 
     @GetMapping("/user/{userId}")
-    MemberVo findByUserId(@PathVariable Long userId);
+    MemberVo findByUserId(@PathVariable(value="userId") Long userId);
 
 }

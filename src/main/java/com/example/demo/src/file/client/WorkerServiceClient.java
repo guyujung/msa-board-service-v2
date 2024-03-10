@@ -28,11 +28,11 @@ public interface WorkerServiceClient {
     List<BoardWorkVo> findWorksByTeamId(@PathVariable("teamId") Long teamId);
 
     @GetMapping("/work/{workId}")
-    WorkVo findWorkById(@PathVariable Long workId);
+    WorkVo findWorkById(@PathVariable(value="workId") Long workId);
 
     @PostMapping("/works/status/{workId}/{status}")
     void setWorkStatus(@PathVariable("workId") Long workId, @PathVariable("status") Integer status);
 
     @GetMapping("/worker/{workId}")
-    List<WorkersVo> findWorkerById(@PathVariable Long workId);
+    List<WorkersVo> findWorkerById(@PathVariable(value="workId") Long workId);
 }

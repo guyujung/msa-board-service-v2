@@ -3,13 +3,18 @@ package com.example.demo.src.file.dto.response;
 
 import com.example.demo.src.file.domain.Alarms;
 import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@AllArgsConstructor
 public class AlarmDetailResponse {
+    public AlarmDetailResponse(){
+
+    }
     private Long alarmId;
 
     private boolean seen;
@@ -46,6 +51,16 @@ public class AlarmDetailResponse {
         this.createdTime=createdTime;
         this.pictureUrl=pictureUrl;
         this.alarmKind=alarmKind;
+    }
+
+    public AlarmDetailResponse(Long alarmId,  String content, String redirectUrl,String pictureUrl, String alarmKind, Long boardId,Long writerId) {
+        this.alarmId=alarmId;
+        this.content=content;
+        this.redirectUrl=redirectUrl;
+        this.pictureUrl=pictureUrl;
+        this.alarmKind=alarmKind;
+        this.boardId=boardId;
+        this.writerId=writerId;
     }
 
     public static AlarmDetailResponse from(Alarms alarms) {

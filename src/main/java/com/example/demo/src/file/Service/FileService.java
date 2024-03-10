@@ -6,6 +6,7 @@ import com.example.demo.src.file.domain.Boards;
 import com.example.demo.src.file.domain.Files;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
@@ -14,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 
 
-@AllArgsConstructor
 @Service
 @Slf4j
 public class FileService {
@@ -22,9 +22,12 @@ public class FileService {
 
 
 
-    private FileRepository fileRepository;
+    private final FileRepository fileRepository;
 
-
+    @Autowired
+    public FileService(FileRepository fileRepository){
+        this.fileRepository=fileRepository;
+    }
 
     void fileupload(MultipartFile[] files , Boards boards) throws IOException {
         String projectPath = "/src/main/resources/static/files";

@@ -12,7 +12,7 @@ import java.util.List;
 
 import static jakarta.persistence.CascadeType.ALL;
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+//@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Boards")
 @Entity
 @Getter
@@ -64,6 +64,10 @@ public class Boards extends BaseTimeEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "boards", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Files> fileList = new ArrayList<>();
+
+    public Boards() {
+
+    }
 
 
     //피드백 추가,연관관계 편의 메소드

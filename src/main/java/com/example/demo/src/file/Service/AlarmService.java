@@ -8,15 +8,20 @@ import com.example.demo.src.file.dto.response.AlarmDetailResponse;
 import com.example.demo.src.file.vo.MemberVo;
 import com.example.demo.src.file.vo.WorkVo;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
+
 @Service
 public class AlarmService {
-    private AlarmRepository alarmRepository;
+    private final AlarmRepository alarmRepository;
 
+    @Autowired
+    public AlarmService(AlarmRepository alarmRepository){
+        this.alarmRepository=alarmRepository;
+    }
 
     //알람 리스트 처리리
     public List<AlarmDetailResponse> alarmList(Long memberId) {

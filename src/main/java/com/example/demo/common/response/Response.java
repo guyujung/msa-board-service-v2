@@ -12,7 +12,7 @@ public class Response<T> {
     private final T content;
     @Getter
     @Builder
-    private static class Status {
+    public static class Status {
         private int code;
         private String message;
     }

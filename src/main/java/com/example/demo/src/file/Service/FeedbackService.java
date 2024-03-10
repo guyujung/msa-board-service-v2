@@ -19,29 +19,36 @@ import com.example.demo.src.file.vo.WorkersVo;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
 @Service
-@AllArgsConstructor
+
 public class FeedbackService {
 
 
-    private FeedbackRepository feedbackRepository;
-    private BoardService boardService;
-    private FeedbackStatusService feedbackStatusService;
-    private AlarmService alarmService;
-
+    private final FeedbackRepository feedbackRepository;
+    private final BoardService boardService;
+    private final FeedbackStatusService feedbackStatusService;
+    private final AlarmService alarmService;
     @Autowired
     WorkerServiceClient workerServiceClient;
     @Autowired
     TeamServiceClient teamServiceClient;
     @Autowired
     MemberServiceClient memberServiceClient;
+
+    @Autowired
+    public FeedbackService(FeedbackRepository feedbackRepository,BoardService boardService,FeedbackStatusService feedbackStatusService,AlarmService alarmService){
+        this.feedbackRepository=feedbackRepository;
+        this.boardService=boardService;
+        this.feedbackStatusService=feedbackStatusService;
+        this.alarmService=alarmService;
+
+    }
+
 
 
     //피드백 작성

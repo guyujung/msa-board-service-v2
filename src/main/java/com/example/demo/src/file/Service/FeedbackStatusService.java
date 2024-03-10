@@ -14,13 +14,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
-public class FeedbackStatusService {
-    private FeedbackStatusRepository feedbackStatusRepository;
-    private AlarmService alarmService;
 
+public class FeedbackStatusService {
+    private final FeedbackStatusRepository feedbackStatusRepository;
+    private final AlarmService alarmService;
     @Autowired
     TeamServiceClient teamServiceClient;
+    public FeedbackStatusService(FeedbackStatusRepository feedbackStatusService,AlarmService alarmService){
+        this.feedbackStatusRepository=feedbackStatusService;
+        this.alarmService=alarmService;
+
+    }
+
+
 
 
     void createFeedbackStatus(List<MemberVo> allMembers , Boards boards,Long teamId, Long writerId){
